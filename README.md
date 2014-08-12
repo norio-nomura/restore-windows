@@ -23,7 +23,7 @@ Instead of using `atom.config`, this package use following files:
 This package restore *windows* as following steps:
 
 1. If **opened directory** is not empty, another instance of *Atom* window is exists. Stop restoring.
-2. Collect *project path* and *timestamp* from **may be restored directory**.  If *timestamp* is **near past (default: 5sec)**, *project* should be opened.
+2. Collect *project path* and *timestamp* from **may be restored directory**.  If *timestamp* is **near past (default: 5sec)** from latest, *project* should be opened.
 3. Remove files from **may be restored directory** on enumeration.
 4. Call `atom.open()` passing *project paths* for openeing windows.
 5. *Atom* will restore all windows state on openeing it.
