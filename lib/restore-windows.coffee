@@ -25,6 +25,7 @@ module.exports =
     if @projectPath?
       @removeFromOpened(@projectPath)
       @addToMayBeRestored(@projectPath)
+    @removeOutdatedMayBeRestored()
     return true
 
   projectPathChanged: ->
@@ -43,6 +44,15 @@ module.exports =
       fs.writeSync(restoreFile, projectPath)
     else
       console.log 'Can not open ' + restoreFilePath
+
+  removeOutdatedMayBeRestored: ->
+    threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
+    outdatedTimestamp = Date.now() - threshold
+    for file in fs.readdirSync(@mayBeRestoredPath)
+      restoreFilePath = path.join(@mayBeRestoredPath, file)
+      timestamp = fs.statSync(restoreFilePath).mtime.valueOf()
+      if outdatedTimestamp > timestamp
+        fs.unlinkSync(restoreFilePath)
 
   addToOpened: (projectPath = @projectPath) ->
     openedFilePath = path.join(@openedPath, @hashedFilename(projectPath))
