@@ -63,16 +63,16 @@ module.exports =
       for file in fs.readdirSync(@mayBeRestoredPath)
         restoreFilePath = path.join(@mayBeRestoredPath, file)
         projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
-        timestamp = fs.statSync(restoreFilePath).mtime
-        timestamp++
+        timestamp = fs.statSync(restoreFilePath).mtime.valueOf()
         timestamps[projectPath] = timestamp
         latestTimestamp = timestamp if timestamp > latestTimestamp
         fs.unlinkSync(restoreFilePath)
 
       pathsToReopen = []
       threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
+      outdatedTimestamp = latestTimestamp - threshold
       for projectPath, timestamp of timestamps
-        if latestTimestamp - timestamp < threshold
+        if outdatedTimestamp < timestamp
           pathsToReopen.push(projectPath)
 
       if pathsToReopen.length > 0
