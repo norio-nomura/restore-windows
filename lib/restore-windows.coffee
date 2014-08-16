@@ -9,7 +9,7 @@ module.exports =
 
   activate: (state) ->
     @initializeDirectory()
-    $(window).on 'beforeunload', => @saveWindow()
+    $(window).on 'beforeunload', => @onBeforeUnload()
     atom.project.on 'projectPath-changed', => @projectPathChanged()
     @restoreWindows()
     @projectPathChanged()
@@ -21,7 +21,7 @@ module.exports =
     @openedPath = path.join(atom.getConfigDirPath(), 'restore-windows', 'opened')
     fs.makeTreeSync(@openedPath) unless fs.existsSync(@openedPath)
 
-  saveWindow: ->
+  onBeforeUnload: ->
     if @projectPath?
       @removeFromOpened(@projectPath)
       @addToMayBeRestored(@projectPath)
