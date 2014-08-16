@@ -72,14 +72,14 @@ module.exports =
         latestTimestamp = timestamp if timestamp > latestTimestamp
         fs.unlinkSync(restoreFilePath)
 
-      pathsToOpenToOpen = []
+      pathsToReopen = []
       threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
       for projectPath, timestamp of timestamps
         if latestTimestamp - timestamp < threshold
-          pathsToOpenToOpen.push(projectPath)
+          pathsToReopen.push(projectPath)
 
-      if pathsToOpenToOpen.length > 0
-        atom.open({pathsToOpen: pathsToOpenToOpen})
+      if pathsToReopen.length > 0
+        atom.open({pathsToOpen: pathsToReopen})
         atom.close() unless atom.project.getPath()?
 
     else
