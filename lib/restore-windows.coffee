@@ -44,9 +44,6 @@ module.exports =
     else
       console.log 'Can not open ' + restoreFilePath
 
-  removeFromMayBeRestored: (projectPath = @projectPath) ->
-    fs.unlinkSync(path.join(@mayBeRestoredPath, @hashedFilename(projectPath)))
-
   addToOpened: (projectPath = @projectPath) ->
     openedFilePath = path.join(@openedPath, @hashedFilename(projectPath))
     openedFile = fs.openSync(openedFilePath, 'w')
