@@ -78,8 +78,9 @@ module.exports =
         if latestTimestamp - timestamp < threshold
           pathsToOpenToOpen.push(projectPath)
 
-      atom.open({pathsToOpen: pathsToOpenToOpen}) if pathsToOpenToOpen.length > 0
-      atom.close() unless atom.project.getPath()?
+      if pathsToOpenToOpen.length > 0
+        atom.open({pathsToOpen: pathsToOpenToOpen})
+        atom.close() unless atom.project.getPath()?
 
     else
       console.log 'Did not restore because `openedPath` is not empty.'
