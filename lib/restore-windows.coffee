@@ -86,7 +86,7 @@ module.exports =
           pathsToReopen.push(projectPath)
 
       if pathsToReopen.length > 0
-        atom.open({pathsToOpen: pathsToReopen})
+        atom.open({pathsToOpen: pathsToReopen, newWindow: true})
         atom.close() unless atom.project.getPath()?
 
     else
