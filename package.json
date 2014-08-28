@@ -6,7 +6,7 @@
   "repository": "https://github.com/norio-nomura/restore-windows",
   "license": "MIT",
   "engines": {
-    "atom": ">0.124.0"
+    "atom": ">=0.124.0"
   },
   "dependencies": {
     "fs-plus": "^2.2.6"
