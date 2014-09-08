@@ -1,3 +1,6 @@
+## 0.3.2 - Fix some issue
+* Check existence of project path on restoring
+
 ## 0.3.1 - Update CHANGELOG.md
 * I always forget updating CHANGELOG.md...
 
