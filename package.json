@@ -1,7 +1,7 @@
 {
   "name": "restore-windows",
   "main": "./lib/restore-windows",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Restore windows on launching Atom.",
   "repository": "https://github.com/norio-nomura/restore-windows",
   "license": "MIT",
