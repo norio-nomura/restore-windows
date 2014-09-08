@@ -82,7 +82,7 @@ module.exports =
       threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
       outdatedTimestamp = latestTimestamp - threshold
       for projectPath, timestamp of timestamps
-        if outdatedTimestamp < timestamp
+        if outdatedTimestamp < timestamp and fs.existsSync(projectPath)
           pathsToReopen.push(projectPath)
 
       if pathsToReopen.length > 0
