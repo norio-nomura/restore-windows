@@ -50,9 +50,10 @@ module.exports =
     outdatedTimestamp = Date.now() - threshold
     for file in fs.readdirSync(@mayBeRestoredPath)
       restoreFilePath = path.join(@mayBeRestoredPath, file)
-      timestamp = fs.statSync(restoreFilePath).mtime.valueOf()
-      if outdatedTimestamp > timestamp
-        fs.unlinkSync(restoreFilePath)
+      if stat = fs.statSyncNoException(restoreFilePath)
+        timestamp = stat.mtime.valueOf()
+        if outdatedTimestamp > timestamp
+          fs.unlinkSync(restoreFilePath)
 
   addToOpened: (projectPath = @projectPath) ->
     openedFilePath = path.join(@openedPath, @hashedFilename(projectPath))
@@ -73,10 +74,11 @@ module.exports =
       for file in fs.readdirSync(@mayBeRestoredPath)
         restoreFilePath = path.join(@mayBeRestoredPath, file)
         projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
-        timestamp = fs.statSync(restoreFilePath).mtime.valueOf()
-        timestamps[projectPath] = timestamp
-        latestTimestamp = timestamp if timestamp > latestTimestamp
-        fs.unlinkSync(restoreFilePath)
+        if stat = fs.statSyncNoException(restoreFilePath)
+          timestamp = stat.mtime.valueOf()
+          timestamps[projectPath] = timestamp
+          latestTimestamp = timestamp if timestamp > latestTimestamp
+          fs.unlinkSync(restoreFilePath)
 
       pathsToReopen = []
       threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
