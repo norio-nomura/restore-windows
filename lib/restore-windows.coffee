@@ -38,31 +38,20 @@ module.exports =
     crypto.createHash('md5').update(projectPath).digest('hex')
 
   addToMayBeRestored: (projectPath = @projectPath) ->
-    restoreFilePath = path.join(@mayBeRestoredPath, @hashedFilename(projectPath))
-    restoreFile = fs.openSync(restoreFilePath, 'w')
-    if restoreFile?
-      fs.writeSync(restoreFile, projectPath)
-    else
-      console.log 'Can not open ' + restoreFilePath
+    fs.writeFileSync(path.join(@mayBeRestoredPath, @hashedFilename(projectPath)), projectPath)
 
   removeOutdatedMayBeRestored: ->
     threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
     outdatedTimestamp = Date.now() - threshold
-    for file in fs.readdirSync(@mayBeRestoredPath)
-      restoreFilePath = path.join(@mayBeRestoredPath, file)
+    for filename in fs.readdirSync(@mayBeRestoredPath)
+      restoreFilePath = path.join(@mayBeRestoredPath, filename)
       if stat = fs.statSyncNoException(restoreFilePath)
         timestamp = stat.mtime.valueOf()
         if outdatedTimestamp > timestamp
           fs.unlinkSync(restoreFilePath)
 
   addToOpened: (projectPath = @projectPath) ->
-    openedFilePath = path.join(@openedPath, @hashedFilename(projectPath))
-    openedFile = fs.openSync(openedFilePath, 'w')
-
-    if openedFile?
-      fs.writeSync(openedFile, projectPath)
-    else
-      console.log 'Can not open ' + openedFilePath
+    fs.writeFileSync(path.join(@openedPath, @hashedFilename(projectPath)), projectPath)
 
   removeFromOpened: (projectPath = @projectPath) ->
     fs.unlinkSync(path.join(@openedPath, @hashedFilename(projectPath)))
@@ -71,10 +60,10 @@ module.exports =
     if fs.readdirSync(@openedPath)?.length == 0
       latestTimestamp = 0
       timestamps = {}
-      for file in fs.readdirSync(@mayBeRestoredPath)
-        restoreFilePath = path.join(@mayBeRestoredPath, file)
-        projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
+      for filename in fs.readdirSync(@mayBeRestoredPath)
+        restoreFilePath = path.join(@mayBeRestoredPath, filename)
         if stat = fs.statSyncNoException(restoreFilePath)
+          projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
           timestamp = stat.mtime.valueOf()
           timestamps[projectPath] = timestamp
           latestTimestamp = timestamp if timestamp > latestTimestamp
