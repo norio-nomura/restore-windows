@@ -43,7 +43,7 @@ module.exports =
   removeOutdatedMayBeRestored: ->
     threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
     outdatedTimestamp = Date.now() - threshold
-    for filename in fs.readdirSync(@mayBeRestoredPath)
+    for filename in fs.readdirSync(@mayBeRestoredPath) when isValidHashedFilename(filename)
       restoreFilePath = path.join(@mayBeRestoredPath, filename)
       if stat = fs.statSyncNoException(restoreFilePath)
         timestamp = stat.mtime.valueOf()
@@ -60,7 +60,7 @@ module.exports =
     if fs.readdirSync(@openedPath)?.length == 0
       latestTimestamp = 0
       timestamps = {}
-      for filename in fs.readdirSync(@mayBeRestoredPath)
+      for filename in fs.readdirSync(@mayBeRestoredPath) when isValidHashedFilename(filename)
         restoreFilePath = path.join(@mayBeRestoredPath, filename)
         if stat = fs.statSyncNoException(restoreFilePath)
           projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
@@ -82,3 +82,6 @@ module.exports =
 
     else
       console.log 'Did not restore because `openedPath` is not empty.'
+
+isValidHashedFilename = (filename) ->
+  filename.match(/^[0-9a-f]{32}$/)?
