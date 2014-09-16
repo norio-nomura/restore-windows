@@ -33,12 +33,8 @@ module.exports =
     @projectPath = atom.project.getPath()
     @addToOpened(@projectPath) if @projectPath?
 
-  hashedFilename: (projectPath = @projectPath) ->
-    # ignore hash collisions
-    crypto.createHash('md5').update(projectPath).digest('hex')
-
   addToMayBeRestored: (projectPath = @projectPath) ->
-    fs.writeFileSync(path.join(@mayBeRestoredPath, @hashedFilename(projectPath)), projectPath)
+    fs.writeFileSync(path.join(@mayBeRestoredPath, hashedFilename(projectPath)), projectPath)
 
   removeOutdatedMayBeRestored: ->
     threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
@@ -51,10 +47,10 @@ module.exports =
           fs.unlinkSync(restoreFilePath)
 
   addToOpened: (projectPath = @projectPath) ->
-    fs.writeFileSync(path.join(@openedPath, @hashedFilename(projectPath)), projectPath)
+    fs.writeFileSync(path.join(@openedPath, hashedFilename(projectPath)), projectPath)
 
   removeFromOpened: (projectPath = @projectPath) ->
-    fs.unlinkSync(path.join(@openedPath, @hashedFilename(projectPath)))
+    fs.unlinkSync(path.join(@openedPath, hashedFilename(projectPath)))
 
   restoreWindows: ->
     if fs.readdirSync(@openedPath)?.length == 0
@@ -82,6 +78,10 @@ module.exports =
 
     else
       console.log 'Did not restore because `openedPath` is not empty.'
+
+hashedFilename = (projectPath = @projectPath) ->
+  # ignore hash collisions
+  crypto.createHash('md5').update(projectPath).digest('hex')
 
 isValidHashedFilename = (filename) ->
   filename.match(/^[0-9a-f]{32}$/)?
