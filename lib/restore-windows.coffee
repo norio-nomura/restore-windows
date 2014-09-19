@@ -8,17 +8,17 @@ module.exports =
     regardOperationsAsQuitWhileMillisecond: 5000
 
   activate: (state) ->
-    @initializeDirectory()
+    @initializeDirectory(atom.getConfigDirPath())
     $(window).on 'beforeunload', => @onBeforeUnload()
     atom.project.on 'projectPath-changed', => @projectPathChanged()
     @restoreWindows()
     @projectPathChanged()
 
-  # stateFiles will be stored in atom.getConfigDirPath()
-  initializeDirectory: ->
-    @mayBeRestoredPath = path.join(atom.getConfigDirPath(), 'restore-windows', 'mayBeRestored')
+  # stateFiles will be stored in configDirPath (default: atom.getConfigDirPath())
+  initializeDirectory: (configDirPath = atom.getConfigDirPath())->
+    @mayBeRestoredPath = path.join(configDirPath, 'restore-windows', 'mayBeRestored')
     fs.makeTreeSync(@mayBeRestoredPath) unless fs.existsSync(@mayBeRestoredPath)
-    @openedPath = path.join(atom.getConfigDirPath(), 'restore-windows', 'opened')
+    @openedPath = path.join(configDirPath, 'restore-windows', 'opened')
     fs.makeTreeSync(@openedPath) unless fs.existsSync(@openedPath)
 
   onBeforeUnload: ->
