@@ -87,7 +87,7 @@ module.exports =
 
     paths
 
-hashedFilename = (projectPath = @projectPath) ->
+hashedFilename = (projectPath) ->
   # ignore hash collisions
   crypto.createHash('md5').update(projectPath).digest('hex')
 
