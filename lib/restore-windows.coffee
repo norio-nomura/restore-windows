@@ -54,23 +54,7 @@ module.exports =
 
   restoreWindows: ->
     if fs.readdirSync(@openedPath)?.length == 0
-      latestTimestamp = 0
-      timestamps = {}
-      for filename in fs.readdirSync(@mayBeRestoredPath) when isValidHashedFilename(filename)
-        restoreFilePath = path.join(@mayBeRestoredPath, filename)
-        if stat = fs.statSyncNoException(restoreFilePath)
-          projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
-          timestamp = stat.mtime.valueOf()
-          timestamps[projectPath] = timestamp
-          latestTimestamp = timestamp if timestamp > latestTimestamp
-          fs.unlinkSync(restoreFilePath)
-
-      pathsToReopen = []
-      threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
-      outdatedTimestamp = latestTimestamp - threshold
-      for projectPath, timestamp of timestamps
-        if outdatedTimestamp < timestamp and fs.existsSync(projectPath)
-          pathsToReopen.push(projectPath)
+      pathsToReopen = @getPathsToReopen()
 
       if atom.project.getPath()?
         pathsToReopen = pathsToReopen.filter (path) -> path isnt atom.project.getPath()
@@ -81,6 +65,27 @@ module.exports =
 
     else
       console.log 'Did not restore because `openedPath` is not empty.'
+
+  getPathsToReopen: ->
+    latestTimestamp = 0
+    timestamps = {}
+    for filename in fs.readdirSync(@mayBeRestoredPath) when isValidHashedFilename(filename)
+      restoreFilePath = path.join(@mayBeRestoredPath, filename)
+      if stat = fs.statSyncNoException(restoreFilePath)
+        projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
+        timestamp = stat.mtime.valueOf()
+        timestamps[projectPath] = timestamp
+        latestTimestamp = timestamp if timestamp > latestTimestamp
+        fs.unlinkSync(restoreFilePath)
+
+    paths = []
+    threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
+    outdatedTimestamp = latestTimestamp - threshold
+    for projectPath, timestamp of timestamps
+      if outdatedTimestamp < timestamp and fs.existsSync(projectPath)
+        paths.push(projectPath)
+
+    paths
 
 hashedFilename = (projectPath = @projectPath) ->
   # ignore hash collisions
