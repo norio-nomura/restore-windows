@@ -1,6 +1,7 @@
 ## WIP - Fix some issue
 * Prevent some unhandled exception
 * Add hashed filename validation
+* Prevent same project has two window
 
 ## 0.3.2 - Fix some issue
 * Check existence of project path on restoring

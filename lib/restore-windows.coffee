@@ -72,6 +72,9 @@ module.exports =
         if outdatedTimestamp < timestamp and fs.existsSync(projectPath)
           pathsToReopen.push(projectPath)
 
+      if atom.project.getPath()?
+        pathsToReopen = pathsToReopen.filter (path) -> path isnt atom.project.getPath()
+
       if pathsToReopen.length > 0
         atom.open({pathsToOpen: pathsToReopen, newWindow: true})
         atom.close() unless atom.project.getPath()?
