@@ -8,17 +8,17 @@ module.exports =
     regardOperationsAsQuitWhileMillisecond: 5000
 
   activate: (state) ->
-    @initializeDirectory()
+    @initializeDirectory(atom.getConfigDirPath())
     $(window).on 'beforeunload', => @onBeforeUnload()
     atom.project.on 'projectPath-changed', => @projectPathChanged()
     @restoreWindows()
     @projectPathChanged()
 
-  # stateFiles will be stored in atom.getConfigDirPath()
-  initializeDirectory: ->
-    @mayBeRestoredPath = path.join(atom.getConfigDirPath(), 'restore-windows', 'mayBeRestored')
+  # stateFiles will be stored in configDirPath (default: atom.getConfigDirPath())
+  initializeDirectory: (configDirPath = atom.getConfigDirPath())->
+    @mayBeRestoredPath = path.join(configDirPath, 'restore-windows', 'mayBeRestored')
     fs.makeTreeSync(@mayBeRestoredPath) unless fs.existsSync(@mayBeRestoredPath)
-    @openedPath = path.join(atom.getConfigDirPath(), 'restore-windows', 'opened')
+    @openedPath = path.join(configDirPath, 'restore-windows', 'opened')
     fs.makeTreeSync(@openedPath) unless fs.existsSync(@openedPath)
 
   onBeforeUnload: ->
@@ -54,23 +54,7 @@ module.exports =
 
   restoreWindows: ->
     if fs.readdirSync(@openedPath)?.length == 0
-      latestTimestamp = 0
-      timestamps = {}
-      for filename in fs.readdirSync(@mayBeRestoredPath) when isValidHashedFilename(filename)
-        restoreFilePath = path.join(@mayBeRestoredPath, filename)
-        if stat = fs.statSyncNoException(restoreFilePath)
-          projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
-          timestamp = stat.mtime.valueOf()
-          timestamps[projectPath] = timestamp
-          latestTimestamp = timestamp if timestamp > latestTimestamp
-          fs.unlinkSync(restoreFilePath)
-
-      pathsToReopen = []
-      threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
-      outdatedTimestamp = latestTimestamp - threshold
-      for projectPath, timestamp of timestamps
-        if outdatedTimestamp < timestamp and fs.existsSync(projectPath)
-          pathsToReopen.push(projectPath)
+      pathsToReopen = @getPathsToReopen()
 
       if atom.project.getPath()?
         pathsToReopen = pathsToReopen.filter (path) -> path isnt atom.project.getPath()
@@ -81,6 +65,27 @@ module.exports =
 
     else
       console.log 'Did not restore because `openedPath` is not empty.'
+
+  getPathsToReopen: ->
+    latestTimestamp = 0
+    timestamps = {}
+    for filename in fs.readdirSync(@mayBeRestoredPath) when isValidHashedFilename(filename)
+      restoreFilePath = path.join(@mayBeRestoredPath, filename)
+      if stat = fs.statSyncNoException(restoreFilePath)
+        projectPath = fs.readFileSync(restoreFilePath, encoding = 'utf8')
+        timestamp = stat.mtime.valueOf()
+        timestamps[projectPath] = timestamp
+        latestTimestamp = timestamp if timestamp > latestTimestamp
+        fs.unlinkSync(restoreFilePath)
+
+    paths = []
+    threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
+    outdatedTimestamp = latestTimestamp - threshold
+    for projectPath, timestamp of timestamps
+      if outdatedTimestamp < timestamp and fs.existsSync(projectPath)
+        paths.push(projectPath)
+
+    paths
 
 hashedFilename = (projectPath = @projectPath) ->
   # ignore hash collisions
