@@ -4,8 +4,11 @@ fs = require 'fs-plus'
 path = require 'path'
 
 module.exports =
-  configDefaults:
-    regardOperationsAsQuitWhileMillisecond: 5000
+  config:
+    regardOperationsAsQuitWhileMillisecond:
+      type: 'integer'
+      default: 5000
+      description: 'Projects will be restored that was closed near past than this threshold before latest project was closed.'
 
   activate: (state) ->
     @initializeDirectory(atom.getConfigDirPath())
