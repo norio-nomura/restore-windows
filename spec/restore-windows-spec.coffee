@@ -58,3 +58,26 @@ describe "RestoreWindows", ->
 
       it "after restoration, mayBeRestored will be empty.", ->
         expect(fs.readdirSync(mayBeRestoredPath).length).toEqual(0)
+
+    describe "removeOutdatedMayBeRestored.", ->
+      pathsToReopen = []
+
+      recentProjectsPaths = (path.join projectsBase, num.toString() for num in [50..100])
+
+      beforeEach ->
+        for projectPath in projectsPaths
+          RestoreWindows.addToMayBeRestored projectPath
+
+        sleep atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond') + 1000
+
+        for projectPath in recentProjectsPaths
+          RestoreWindows.addToMayBeRestored projectPath
+
+        RestoreWindows.removeOutdatedMayBeRestored()
+
+      it "removeOutdatedMayBeRestored will remove older mayBeRestored.", ->
+        expect(fs.readdirSync(mayBeRestoredPath).length).toEqual(recentProjectsPaths.length)
+
+sleep = (ms) ->
+  start = new Date().getTime()
+  continue while new Date().getTime() - start < ms

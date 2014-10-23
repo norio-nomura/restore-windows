@@ -3,6 +3,7 @@
 * Add hashed filename validation
 * Prevent same project has two window
 * New Config API
+* Add spec
 
 ## 0.3.2 - Fix some issue
 * Check existence of project path on restoring
