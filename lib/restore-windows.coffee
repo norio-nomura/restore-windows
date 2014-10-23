@@ -11,6 +11,12 @@ module.exports =
       description: 'Projects will be restored that was closed near past than this threshold before latest project was closed.'
 
   activate: (state) ->
+    if atom.inDevMode()
+      console.log "restore-windows stopped restoring because atom is in development mode."
+      return
+    if atom.inSpecMode()
+      console.log "restore-windows stopped restoring because atom is in development mode."
+      return
     @initializeDirectory(atom.getConfigDirPath())
     $(window).on 'beforeunload', => @onBeforeUnload()
     atom.project.on 'projectPath-changed', => @projectPathChanged()
