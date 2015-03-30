@@ -1,4 +1,4 @@
-## WIP - Fix some issue
+## 0.4.0
 * Prevent some unhandled exception
 * Add hashed filename validation
 * Prevent same project has two window
