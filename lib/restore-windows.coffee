@@ -18,7 +18,7 @@ module.exports =
       return
     @initializeDirectory(atom.getConfigDirPath())
     window.addEventListener 'beforeunload', => @onBeforeUnload()
-    atom.project.on 'projectPath-changed', => @projectPathChanged()
+    atom.project.onDidChangePaths => @projectPathChanged()
     @restoreWindows()
     @projectPathChanged()
 
