@@ -14,13 +14,13 @@ module.exports =
       console.log "restore-windows stopped restoring because atom is in development mode."
       return
     if atom.inSpecMode()
-      console.log "restore-windows stopped restoring because atom is in development mode."
+      console.log "restore-windows stopped restoring because atom is in spec mode."
       return
     @initializeDirectory(atom.getConfigDirPath())
     window.addEventListener 'beforeunload', => @onBeforeUnload()
-    atom.project.onDidChangePaths => @projectPathChanged()
+    atom.project.onDidChangePaths => @projectPathsChanged()
     @restoreWindows()
-    @projectPathChanged()
+    @projectPathsChanged()
 
   # stateFiles will be stored in configDirPath (default: atom.getConfigDirPath())
   initializeDirectory: (configDirPath = atom.getConfigDirPath())->
@@ -30,41 +30,42 @@ module.exports =
     fs.makeTreeSync(@openedPath) unless fs.existsSync(@openedPath)
 
   onBeforeUnload: ->
-    if @projectPath?
-      @removeFromOpened(@projectPath)
-      @addToMayBeRestored(@projectPath)
+    if @projectPaths?
+      @removeFromOpened(@projectPaths)
+      @addToMayBeRestored(@projectPaths)
     @removeOutdatedMayBeRestored()
     return true
 
-  projectPathChanged: ->
-    @removeFromOpened(@projectPath) if @projectPath?
-    @projectPath = atom.project.getPath()
-    @addToOpened(@projectPath) if @projectPath?
+  projectPathsChanged: ->
+    @removeFromOpened(@projectPaths) if @projectPaths?
+    @projectPaths = atom.project.getPaths()
+    @addToOpened(@projectPaths) if @projectPaths?.length > 0
 
-  addToMayBeRestored: (projectPath = @projectPath) ->
-    fs.writeFileSync(path.join(@mayBeRestoredPath, hashedFilename(projectPath)), projectPath)
+  addToMayBeRestored: (projectPaths = @projectPaths) ->
+    fs.writeFileSync(path.join(@mayBeRestoredPath, hashedFilename(projectPaths)), projectPaths.join("\n"))
 
   removeOutdatedMayBeRestored: ->
     threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
     mayBeRestored = @readMayBeRestored()
     mayBeRestored.forEach (x) -> fs.unlinkSync(x.restoreFilePath) if x.timestampDiff > threshold
 
-  addToOpened: (projectPath = @projectPath) ->
-    fs.writeFileSync(path.join(@openedPath, hashedFilename(projectPath)), projectPath)
+  addToOpened: (projectPaths = @projectPaths) ->
+    fs.writeFileSync(path.join(@openedPath, hashedFilename(projectPaths)), projectPaths.join("\n"))
 
-  removeFromOpened: (projectPath = @projectPath) ->
-    fs.unlinkSync(path.join(@openedPath, hashedFilename(projectPath)))
+  removeFromOpened: (projectPaths = @projectPaths) ->
+    fs.unlinkSync(path.join(@openedPath, hashedFilename(projectPaths)))
 
   restoreWindows: ->
     if fs.readdirSync(@openedPath)?.length == 0
       pathsToReopen = @getPathsToReopen()
 
-      if atom.project.getPath()?
-        pathsToReopen = pathsToReopen.filter (path) -> path isnt atom.project.getPath()
+      if atom.project.getPaths()?.length > 0
+        currentHashedFilename = hashedFilename(atom.project.getPaths())
+        pathsToReopen = pathsToReopen.filter (paths) -> hashedFilename(paths) isnt currentHashedFilename
 
       if pathsToReopen.length > 0
-        atom.open({pathsToOpen: pathsToReopen, newWindow: true})
-        atom.close() unless atom.project.getPath()?
+        pathsToReopen.forEach (paths) -> atom.open({pathsToOpen: paths, newWindow: true})
+        atom.close() unless atom.project.getPaths()?.length > 0
 
     else
       console.log 'Did not restore because `openedPath` is not empty.'
@@ -74,8 +75,8 @@ module.exports =
     mayBeRestored = @readMayBeRestored()
     mayBeRestored.forEach (x) -> fs.unlinkSync(x.restoreFilePath)
     mayBeRestored
-      .filter (x) -> x.timestampDiff < threshold and fs.existsSync(x.projectPath)
-      .map (x) -> x.projectPath
+      .filter (x) -> x.timestampDiff < threshold and x.projectPaths.some fs.existsSync
+      .map (x) -> x.projectPaths
 
   readMayBeRestored: ->
     latestTimestamp = 0
@@ -84,19 +85,22 @@ module.exports =
         if isValidHashedFilename(filename)
           restoreFilePath = path.join(@mayBeRestoredPath, filename)
           if stat = fs.statSyncNoException(restoreFilePath)
-            projectPath = fs.readFileSync(restoreFilePath, 'utf8')
+            projectPaths = fs.readFileSync(restoreFilePath, 'utf8').split("\n")
             timestamp = stat.mtime.valueOf()
             latestTimestamp = timestamp if timestamp > latestTimestamp
-            {restoreFilePath: restoreFilePath, projectPath: projectPath, timestamp: timestamp}
+            {restoreFilePath: restoreFilePath, projectPaths: projectPaths, timestamp: timestamp}
       , @)
       .filter (x) -> x
       .map (x) ->
         x.timestampDiff = latestTimestamp - x.timestamp
         x
 
-hashedFilename = (projectPath) ->
+hashedFilename = (projectPaths) ->
   # ignore hash collisions
-  crypto.createHash('md5').update(projectPath).digest('hex')
+  projectPaths
+    .map (projectPath) ->
+      crypto.createHash('md5').update(projectPath).digest('hex')
+    .join "_"
 
 isValidHashedFilename = (filename) ->
-  filename.match(/^[0-9a-f]{32}$/)?
+  filename.match(/^[0-9a-f]{32}(_[0-9a-f]{32})*$/)?
