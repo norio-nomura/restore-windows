@@ -30,17 +30,28 @@ describe "RestoreWindows", ->
 
   describe "store info to opened/mayBeRestored", ->
     projectsBase = path.join fixturePath, "projects"
-    projectsPaths = (path.join projectsBase, num.toString() for num in [0..100])
+    projectsPaths = ([path.join projectsBase, num.toString()] for num in [0..100])
 
     beforeEach ->
       for projectPath in projectsPaths
-        fs.makeTreeSync projectPath unless fs.existsSync projectPath
+        fs.makeTreeSync projectPath[0] unless fs.existsSync projectPath[0]
 
     afterEach ->
       for projectPath in projectsPaths
-        fs.rmdirSync projectPath if fs.existsSync projectPath
+        fs.rmdirSync projectPath[0] if fs.existsSync projectPath[0]
 
     describe "add/retrieve project path to/from 'restore-windows/opened'", ->
+      multipleRootProjectPaths = [0..3]
+        .map (num) -> Math.floor(101 * Math.random())
+        .map (num) -> path.join projectsBase, num.toString()
+
+      it "add to opened", ->
+        RestoreWindows.addToOpened multipleRootProjectPaths
+        expect(fs.readdirSync(openedPath).length).toEqual(1)
+
+      it "remove from opened", ->
+        RestoreWindows.removeFromOpened multipleRootProjectPaths
+        expect(fs.readdirSync(openedPath).length).toEqual(0)
 
     describe "add/retrieve project path to/from 'restore-windows/mayBeRestored'", ->
       pathsToReopen = []
@@ -51,7 +62,7 @@ describe "RestoreWindows", ->
 
         pathsToReopen = RestoreWindows.getPathsToReopen()
 
-      it "all added projects may be restored.", ->
+      it "all added to projects mayBeRestored.", ->
         expect(pathsToReopen.length).toEqual(projectsPaths.length)
         for pathToReopen in pathsToReopen
           expect(projectsPaths).toContain(pathToReopen)
@@ -61,8 +72,7 @@ describe "RestoreWindows", ->
 
     describe "removeOutdatedMayBeRestored.", ->
       pathsToReopen = []
-
-      recentProjectsPaths = (path.join projectsBase, num.toString() for num in [50..100])
+      recentProjectsPaths = ([path.join projectsBase, num.toString()] for num in [50..100])
 
       beforeEach ->
         for projectPath in projectsPaths
@@ -75,8 +85,27 @@ describe "RestoreWindows", ->
 
         RestoreWindows.removeOutdatedMayBeRestored()
 
+        pathsToReopen = RestoreWindows.getPathsToReopen()
+
       it "removeOutdatedMayBeRestored will remove older mayBeRestored.", ->
-        expect(fs.readdirSync(mayBeRestoredPath).length).toEqual(recentProjectsPaths.length)
+        expect(pathsToReopen.length).toEqual(recentProjectsPaths.length)
+        for pathToReopen in pathsToReopen
+          expect(recentProjectsPaths).toContain(pathToReopen)
+
+    describe "add/retrieve multiple root folders to/from 'restore-windows/mayBeRestored'", ->
+      pathsToReopen = []
+
+      multipleRootProjectPaths = [0..3]
+        .map (num) -> Math.floor(101 * Math.random())
+        .map (num) -> path.join projectsBase, num.toString()
+
+      beforeEach ->
+        RestoreWindows.addToMayBeRestored multipleRootProjectPaths
+        pathsToReopen = RestoreWindows.getPathsToReopen()
+
+      it "multipleRootProjectPaths", ->
+        expect(pathsToReopen.length).toEqual(1)
+        expect(pathsToReopen).toContain(multipleRootProjectPaths)
 
 sleep = (ms) ->
   start = new Date().getTime()
