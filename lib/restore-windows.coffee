@@ -1,4 +1,3 @@
-{$} = require 'atom'
 crypto = require 'crypto'
 fs = require 'fs-plus'
 path = require 'path'
@@ -18,7 +17,7 @@ module.exports =
       console.log "restore-windows stopped restoring because atom is in development mode."
       return
     @initializeDirectory(atom.getConfigDirPath())
-    $(window).on 'beforeunload', => @onBeforeUnload()
+    window.addEventListener 'beforeunload', => @onBeforeUnload()
     atom.project.on 'projectPath-changed', => @projectPathChanged()
     @restoreWindows()
     @projectPathChanged()
