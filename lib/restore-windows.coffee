@@ -30,14 +30,14 @@ module.exports =
     fs.makeTreeSync(@openedPath) unless fs.existsSync(@openedPath)
 
   onBeforeUnload: ->
-    if @projectPaths?
+    if @projectPaths?.length
       @removeFromOpened(@projectPaths)
       @addToMayBeRestored(@projectPaths)
     @removeOutdatedMayBeRestored()
     return true
 
   projectPathsChanged: ->
-    @removeFromOpened(@projectPaths) if @projectPaths?
+    @removeFromOpened(@projectPaths) if @projectPaths?.length > 0
     @projectPaths = atom.project.getPaths()
     @addToOpened(@projectPaths) if @projectPaths?.length > 0
 
