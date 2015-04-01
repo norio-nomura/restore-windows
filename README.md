@@ -3,7 +3,7 @@
 Restore windows on launching [Atom](http://atom.io).
 
 ## What is this?
-Atom identifies *window* by *project's path* `atom.project.getPath()` and remembers every opened *project*'s states including *window*. **But Atom does not remember which *projects* were opened on quitting.**
+Atom identifies *window* by *project's path* `atom.project.getPaths()` and remembers every opened *project*'s states including *window*. **But Atom does not remember which *projects* were opened on quitting.**
 
 This package remembers and opens them on launching instead of Atom.
 
