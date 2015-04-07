@@ -50,13 +50,13 @@ module.exports =
   removeOutdatedMayBeRestored: ->
     threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
     mayBeRestored = @readMayBeRestored()
-    mayBeRestored.forEach (x) -> fs.unlinkSync(x.restoreFilePath) if x.timestampDiff > threshold
+    mayBeRestored.forEach (x) -> unlinkSyncIfExists(x.restoreFilePath) if x.timestampDiff > threshold
 
   addToOpened: (projectPaths = @projectPaths) ->
     fs.writeFileSync(path.join(@openedPath, hashedFilename(projectPaths)), projectPaths.join("\n"))
 
   removeFromOpened: (projectPaths = @projectPaths) ->
-    fs.unlinkSync(path.join(@openedPath, hashedFilename(projectPaths)))
+    unlinkSyncIfExists(path.join(@openedPath, hashedFilename(projectPaths)))
 
   restoreWindows: ->
     if fs.readdirSync(@openedPath)?.length == 0
@@ -76,7 +76,7 @@ module.exports =
   getPathsToReopen: ->
     threshold = atom.config.get('restore-windows.regardOperationsAsQuitWhileMillisecond')
     mayBeRestored = @readMayBeRestored()
-    mayBeRestored.forEach (x) -> fs.unlinkSync(x.restoreFilePath)
+    mayBeRestored.forEach (x) -> unlinkSyncIfExists(x.restoreFilePath)
     mayBeRestored
       .filter (x) -> x.timestampDiff < threshold and x.projectPaths.some fs.existsSync
       .map (x) -> x.projectPaths
@@ -107,3 +107,6 @@ hashedFilename = (projectPaths) ->
 
 isValidHashedFilename = (filename) ->
   filename.match(/^[0-9a-f]{32}(_[0-9a-f]{32})*$/)?
+
+unlinkSyncIfExists = (filename) ->
+  fs.unlinkSync(filename) if fs.existsSync(filename)
