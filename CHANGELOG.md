@@ -1,3 +1,6 @@
+## 0.4.1
+* Fix crash on launching
+
 ## 0.4.0
 * Prevent some unhandled exception
 * Add hashed filename validation
