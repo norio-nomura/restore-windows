@@ -18,9 +18,12 @@ module.exports =
       return
     @initializeDirectory(atom.getConfigDirPath())
     window.addEventListener 'beforeunload', => @onBeforeUnload()
-    atom.project.onDidChangePaths => @projectPathsChanged()
+    @subscribeChagePaths = atom.project.onDidChangePaths => @projectPathsChanged()
     @restoreWindows()
     @projectPathsChanged()
+
+  deactivate: ->
+    @subscribeChagePaths.dispose()
 
   # stateFiles will be stored in configDirPath (default: atom.getConfigDirPath())
   initializeDirectory: (configDirPath = atom.getConfigDirPath())->
