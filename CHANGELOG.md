@@ -1,3 +1,6 @@
+## 0.4.2
+* Atom < 0.193.0 
+
 ## 0.4.1
 * Fix crash on launching
 

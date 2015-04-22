@@ -1,9 +1,11 @@
+** !! Atom [v0.193.0](http://blog.atom.io/2015/04/21/atom-is-faster-resizable-saves-app-state.html) supports restoring window state. You won't need this package any more!! **
+
 # Restore Windows
 
 Restore windows on launching [Atom](http://atom.io).
 
 ## What is this?
-Atom identifies *window* by *project's path* `atom.project.getPaths()` and remembers every opened *project*'s states including *window*. **But Atom does not remember which *projects* were opened on quitting.**
+Atom identifies *window* by *project's path* `atom.project.getPaths()` and remembers every opened *project*'s states including *window*.  ~~But Atom does not remember which *projects* were opened on quitting.~~ **Atom [v0.193.0](http://blog.atom.io/2015/04/21/atom-is-faster-resizable-saves-app-state.html) supports restoring window state. You won't need this package any more!!**
 
 This package remembers and opens them on launching instead of Atom.
 
